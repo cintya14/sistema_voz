@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Nueva Venta{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-receipt me-2"></i>Nueva Venta
+                    </h5>
+                </div>
+                <div class="card-body p-1 p-md-3">
+                    <form action="{{ url_for('ventas_bp.add_venta') }}" method="POST">
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
+                                <label for="fecha_emision" class="form-label">Fecha y Hora:</label>
+                                <input type="datetime-local" id="fecha_emision" name="fecha_emision"
+                                       class="form-control" value="{{ fecha_hoy }}" required>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="id_tipo_documento" class="form-label">Tipo de Documento:</label>
+                                <select id="id_tipo_documento" name="id_tipo_documento" class="form-select" required>
+                                    <option value="">Seleccionar tipo</option>
+                                    {% for tipo in tipos_documento %}
+                                    <option value="{{ tipo.id_tipo_documento }}">{{ tipo.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="id_serie" class="form-label">Serie:</label>
+                                <select id="id_serie" name="id_serie" class="form-select" required>
+                                    <option value="">Primero seleccione tipo de documento</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="id_cliente" class="form-label">Cliente (Opcional):</label>
+                                <select id="id_cliente" name="id_cliente" class="form-select">
+                                    <option value="">Seleccionar cliente</option>
+                                    {% for cliente in clientes %}
+                                    <option value="{{ cliente.id_cliente }}">{{ cliente.nombre_o_razon_social }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label for="id_almacen" class="form-label">Almacén de Venta:</label>
+                                <select id="id_almacen" name="id_almacen" class="form-select" required>
+                                    <option value="">Seleccionar almacén</option>
+                                    {% for almacen in almacenes %}
+                                    <option value="{{ almacen.id_almacen }}">{{ almacen.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-center mt-4">
+                            <button type="submit" class="btn btn-primary d-flex align-items-center me-2">
+                                <i class="bi bi-save me-2"></i>Crear Venta
+                            </button>
+                            <a href="{{ url_for('ventas_bp.list_ventas') }}" class="btn btn-secondary d-flex align-items-center">
+                                <i class="bi bi-x-circle me-2"></i>Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Cargar series cuando se seleccione el tipo de documento
+    document.getElementById('id_tipo_documento').addEventListener('change', function() {
+        const idTipoDocumento = this.value;
+        const serieSelect = document.getElementById('id_serie');
+
+        if (idTipoDocumento) {
+            fetch(`/ventas/get_series/${idTipoDocumento}`)
+                .then(response => response.json())
+                .then(series => {
+                    serieSelect.innerHTML = '<option value="">Seleccionar serie</option>';
+                    series.forEach(serie => {
+                        serieSelect.innerHTML += `<option value="${serie.id_serie}">${serie.serie}</option>`;
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        } else {
+            serieSelect.innerHTML = '<option value="">Primero seleccione tipo de documento</option>';
+        }
+    });
+});
+</script>
+{% endblock %}

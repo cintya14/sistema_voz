@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Tipo de Documento{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-pencil-square me-2"></i>Editar Tipo de Documento
+                    </h5>
+                </div>
+                <div class="card-body p-1 p-md-3">
+                    <form action="{{ url_for('tipos_documento_bp.edit_tipo_documento', id_tipo_documento=tipo_documento.id_tipo_documento) }}" method="POST">
+                        <div class="row g-4">
+                            <div class="col-12 col-md-6">
+                                <label for="nombre" class="form-label">Nombre del Documento (Ej: DNI):</label>
+                                <input type="text" id="nombre" name="nombre" class="form-control" value="{{ tipo_documento.nombre }}" required>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="codigo_sunat" class="form-label">Código SUNAT (Ej: 1):</label>
+                                <input type="text" id="codigo_sunat" name="codigo_sunat" class="form-control" maxlength="5" value="{{ tipo_documento.codigo_sunat }}" required>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-center mt-3">
+                            <button type="submit" class="btn btn-primary d-flex align-items-center me-2">
+                                <i class="bi bi-arrow-clockwise me-2"></i>Actualizar
+                            </button>
+                            <a href="{{ url_for('tipos_documento_bp.list_tipos_documento') }}" class="btn btn-secondary d-flex align-items-center">
+                                <i class="bi bi-x-circle me-2"></i>Cerrar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

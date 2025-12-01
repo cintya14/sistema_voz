@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Inventario Inicial{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3"><i class="bi bi-archive me-2"></i>Inventario Inicial</h1>
+        <div>
+            <a href="{{ url_for('inventario_inicial_bp.add_inventario_inicial') }}" class="btn btn-primary me-2">
+                <i class="bi bi-plus-circle me-1"></i> Nuevo Registro
+            </a>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Volver
+            </a>
+        </div>
+    </div>
+
+    <!-- Barra de búsqueda -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-2">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="search" placeholder="Buscar por artículo, almacén o código..." value="{{ search }}">
+                        <button class="btn btn-outline-secondary" type="submit">
+                            <i class="bi bi-search"></i> Buscar
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    {% if search %}
+                    <a href="{{ url_for('inventario_inicial_bp.list_inventario_inicial') }}" class="btn btn-outline-danger">
+                        <i class="bi bi-x-circle"></i> Limpiar
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Alerta pequeña e informativa -->
+    <div class="alert alert-info alert-dismissible fade show mb-3 py-2" role="alert">
+        <i class="bi bi-info-circle me-2"></i>
+        <small>Use <strong>Ajustar</strong> para modificar registros. La eliminación está deshabilitada.</small>
+        <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Mensajes flash normales -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show mb-3" role="alert">
+                    <i class="bi bi-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' }} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Almacén</th>
+                            <th>Artículo</th>
+                            <th>Código</th>
+                            <th>Cantidad</th>
+                            <th>Costo Unitario</th>
+                            <th>Total</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in inventario.items %}
+                        <tr>
+                            <td>{{ item.fecha.strftime('%d/%m/%Y') }}</td>
+                            <td>{{ item.almacen_nombre }}</td>
+                            <td>{{ item.articulo_nombre }}</td>
+                            <td>{{ item.articulo_codigo }}</td>
+                            <td>{{ item.cantidad }}</td>
+                            <td>S/ {{ "%.2f"|format(item.costo_unitario) }}</td>
+                            <td>S/ {{ "%.2f"|format(item.cantidad * item.costo_unitario) }}</td>
+                            <td>
+                                <a href="{{ url_for('inventario_inicial_bp.ajustar_inventario_inicial', id_inventario_inicial=item.id_inventario_inicial) }}"
+                                   class="btn btn-warning btn-sm">
+                                    <i class="bi bi-pencil-square"></i> Ajustar
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted">
+                                {% if search %}
+                                    No se encontraron registros para "{{ search }}"
+                                {% else %}
+                                    No hay registros de inventario inicial.
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginación -->
+            <div id="pagination-section">
+                {% if inventario.items %}
+                <nav aria-label="Navegación de páginas">
+                    <ul class="pagination justify-content-center mb-0">
+                        <!-- Botón Primera Página -->
+                        <li class="page-item {% if not inventario.has_prev %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for('inventario_inicial_bp.list_inventario_inicial', page=1, search=search) }}">
+                                <i class="bi bi-chevron-double-left"></i>
+                            </a>
+                        </li>
+
+                        <!-- Botón Anterior -->
+                        <li class="page-item {% if not inventario.has_prev %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for('inventario_inicial_bp.list_inventario_inicial', page=inventario.prev_num, search=search) if inventario.has_prev else '#' }}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+
+                        <!-- Números de página -->
+                        {% for page_num in inventario.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                            {% if page_num %}
+                                <li class="page-item {% if page_num == inventario.page %}active{% endif %}">
+                                    <a class="page-link" href="{{ url_for('inventario_inicial_bp.list_inventario_inicial', page=page_num, search=search) }}">{{ page_num }}</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        <!-- Botón Siguiente -->
+                        <li class="page-item {% if not inventario.has_next %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for('inventario_inicial_bp.list_inventario_inicial', page=inventario.next_num, search=search) if inventario.has_next else '#' }}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+
+                        <!-- Botón Última Página -->
+                        <li class="page-item {% if not inventario.has_next %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for('inventario_inicial_bp.list_inventario_inicial', page=inventario.pages, search=search) }}">
+                                <i class="bi bi-chevron-double-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+
+                <!-- Información de paginación -->
+                <div class="text-center mt-3 text-muted">
+                    <small>
+                        Mostrando {{ inventario.items|length }} de {{ inventario.total }} registros
+                        (Página {{ inventario.page }} de {{ inventario.pages }})
+                    </small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,355 @@
+{% extends "base.html" %}
+
+{% block title %}Añadir Inventario Inicial{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-plus-circle me-2"></i>Añadir Inventario Inicial
+                    </h5>
+                </div>
+                <div class="card-body p-1 p-md-3">
+                    <form action="{{ url_for('inventario_inicial_bp.add_inventario_inicial') }}" method="POST">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label for="fecha" class="form-label">Fecha:</label>
+                                <input type="date" id="fecha" name="fecha" class="form-control" value="{{ fecha_hoy }}" required>
+                            </div>
+                            <div class="col-12">
+                                <label for="id_almacen" class="form-label">Almacén:</label>
+                                <select id="id_almacen" name="id_almacen" class="form-select" required>
+                                    <option value="">Seleccionar almacén</option>
+                                    {% for almacen in almacenes %}
+                                    <option value="{{ almacen.id_almacen }}">{{ almacen.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label for="search_articulo" class="form-label">Buscar Artículo:</label>
+                                <div class="input-group">
+                                    <input type="text" id="search_articulo" class="form-control"
+                                           placeholder="Escribe para buscar artículo por código o nombre...">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="clearSearch()">
+                                        <i class="bi bi-x-circle"></i>
+                                    </button>
+                                </div>
+                                <select id="id_articulo" name="id_articulo" class="form-select mt-2" required size="5" style="display: none;">
+                                    <option value="">Seleccionar artículo</option>
+                                    {% for articulo in articulos %}
+                                    <option value="{{ articulo.id_articulo }}"
+                                            data-codigo="{{ articulo.codigo }}"
+                                            data-nombre="{{ articulo.nombre }}"
+                                            data-precio="{{ articulo.precio_compra }}">
+                                        {{ articulo.codigo }} - {{ articulo.nombre }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <div id="articulo_seleccionado" class="mt-2 p-2 bg-light rounded" style="display: none;">
+                                    <strong>Artículo seleccionado:</strong>
+                                    <span id="articulo_info"></span>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2" onclick="cambiarArticulo()">
+                                        <i class="bi bi-arrow-clockwise"></i> Cambiar
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="cantidad" class="form-label">Cantidad:</label>
+                                <input type="number" id="cantidad" name="cantidad" class="form-control" required min="1">
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="costo_unitario" class="form-label">Costo Unitario (S/):</label>
+                                <input type="number" step="0.01" id="costo_unitario" name="costo_unitario" class="form-control" required min="0">
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-center mt-4">
+                            <button type="submit" class="btn btn-primary d-flex align-items-center me-2">
+                                <i class="bi bi-save me-2"></i>Guardar
+                            </button>
+                            <a href="{{ url_for('inventario_inicial_bp.list_inventario_inicial') }}" class="btn btn-secondary d-flex align-items-center">
+                                <i class="bi bi-x-circle me-2"></i>Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search_articulo');
+    const selectArticulo = document.getElementById('id_articulo');
+    const articuloSeleccionadoDiv = document.getElementById('articulo_seleccionado');
+    const articuloInfo = document.getElementById('articulo_info');
+    const costoUnitario = document.getElementById('costo_unitario');
+
+    let isMouseInSelect = false;
+
+    // Mostrar todos los artículos inicialmente y ocultar el select
+    filterArticulos('');
+    selectArticulo.style.display = 'none';
+
+    // Búsqueda en tiempo real
+    searchInput.addEventListener('input', function() {
+        filterArticulos(this.value);
+        // Mostrar el select cuando se empiece a escribir
+        if (this.value.length > 0) {
+            selectArticulo.style.display = 'block';
+        }
+    });
+
+    // Manejar foco en el input de búsqueda
+    searchInput.addEventListener('focus', function() {
+        selectArticulo.style.display = 'block';
+        articuloSeleccionadoDiv.style.display = 'none';
+        filterArticulos(this.value);
+    });
+
+    // Manejar cuando el mouse entra en el select
+    selectArticulo.addEventListener('mouseenter', function() {
+        isMouseInSelect = true;
+    });
+
+    // Manejar cuando el mouse sale del select
+    selectArticulo.addEventListener('mouseleave', function() {
+        isMouseInSelect = false;
+    });
+
+    // Ocultar select cuando se hace clic fuera
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !selectArticulo.contains(e.target) && !isMouseInSelect) {
+            selectArticulo.style.display = 'none';
+        }
+    });
+
+    // Manejar selección de artículo
+    selectArticulo.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        if (selectedOption && selectedOption.value) {
+            const codigo = selectedOption.getAttribute('data-codigo');
+            const nombre = selectedOption.getAttribute('data-nombre');
+            const precio = selectedOption.getAttribute('data-precio');
+
+            articuloInfo.textContent = `${codigo} - ${nombre}`;
+            articuloSeleccionadoDiv.style.display = 'block';
+            selectArticulo.style.display = 'none';
+            searchInput.value = '';
+
+            // Auto-completar el costo unitario con el precio de compra
+            if (precio && precio !== 'None') {
+                costoUnitario.value = parseFloat(precio).toFixed(2);
+            }
+
+            // Enfocar el campo de cantidad después de seleccionar
+            document.getElementById('cantidad').focus();
+        }
+    });
+
+    // Manejar tecla Escape para cerrar el dropdown
+    searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            selectArticulo.style.display = 'none';
+            this.blur();
+        }
+    });
+
+    function filterArticulos(searchTerm) {
+        const options = selectArticulo.getElementsByTagName('option');
+        let hasVisibleOptions = false;
+        let hasResults = false;
+
+        // Mostrar u ocultar opciones basado en la búsqueda
+        for (let i = 0; i < options.length; i++) {
+            const option = options[i];
+
+            // Saltar la opción vacía inicial
+            if (option.value === '') {
+                option.style.display = searchTerm === '' ? '' : 'none';
+                continue;
+            }
+
+            const text = option.textContent.toLowerCase();
+            if (text.includes(searchTerm.toLowerCase())) {
+                option.style.display = '';
+                hasVisibleOptions = true;
+                hasResults = true;
+            } else {
+                option.style.display = 'none';
+            }
+        }
+
+        // Manejar el caso cuando no hay resultados
+        const noResultsOption = selectArticulo.querySelector('.no-results');
+        if (!hasResults && searchTerm.length > 0) {
+            if (!noResultsOption) {
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = 'No se encontraron artículos';
+                option.className = 'no-results';
+                option.disabled = true;
+                selectArticulo.appendChild(option);
+            } else {
+                noResultsOption.style.display = '';
+            }
+        } else if (noResultsOption) {
+            noResultsOption.style.display = 'none';
+        }
+
+        // Ajustar el tamaño del select basado en los resultados visibles
+        adjustSelectSize();
+    }
+
+    function adjustSelectSize() {
+        const visibleOptions = Array.from(selectArticulo.options).filter(opt =>
+            opt.style.display !== 'none' && !opt.disabled
+        );
+
+        // Limitar el tamaño máximo a 8 opciones
+        const size = Math.min(Math.max(visibleOptions.length, 3), 8);
+        selectArticulo.size = size;
+    }
+});
+
+function clearSearch() {
+    const searchInput = document.getElementById('search_articulo');
+    const selectArticulo = document.getElementById('id_articulo');
+
+    searchInput.value = '';
+    searchInput.focus();
+
+    // Mostrar todas las opciones y resetear el select
+    filterArticulos('');
+    selectArticulo.selectedIndex = 0;
+    selectArticulo.style.display = 'block';
+}
+
+function cambiarArticulo() {
+    document.getElementById('articulo_seleccionado').style.display = 'none';
+    document.getElementById('id_articulo').style.display = 'block';
+    document.getElementById('id_articulo').selectedIndex = 0;
+    document.getElementById('search_articulo').value = '';
+    document.getElementById('search_articulo').focus();
+    document.getElementById('costo_unitario').value = '';
+
+    // Mostrar todas las opciones
+    filterArticulos('');
+}
+
+// Función global para filterArticulos (necesaria para clearSearch y cambiarArticulo)
+function filterArticulos(searchTerm) {
+    const selectArticulo = document.getElementById('id_articulo');
+    const options = selectArticulo.getElementsByTagName('option');
+    let hasResults = false;
+
+    for (let i = 0; i < options.length; i++) {
+        const option = options[i];
+
+        if (option.value === '' || option.classList.contains('no-results')) {
+            continue;
+        }
+
+        const text = option.textContent.toLowerCase();
+        if (text.includes(searchTerm.toLowerCase())) {
+            option.style.display = '';
+            hasResults = true;
+        } else {
+            option.style.display = 'none';
+        }
+    }
+
+    // Manejar mensaje de no resultados
+    const noResultsOption = selectArticulo.querySelector('.no-results');
+    if (!hasResults && searchTerm.length > 0) {
+        if (!noResultsOption) {
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = 'No se encontraron artículos';
+            option.className = 'no-results text-muted';
+            option.disabled = true;
+            selectArticulo.appendChild(option);
+        }
+    } else if (noResultsOption) {
+        noResultsOption.remove();
+    }
+
+    adjustSelectSize();
+}
+
+function adjustSelectSize() {
+    const selectArticulo = document.getElementById('id_articulo');
+    const visibleOptions = Array.from(selectArticulo.options).filter(opt =>
+        opt.style.display !== 'none' && !opt.disabled && !opt.classList.contains('no-results')
+    );
+
+    const size = Math.min(Math.max(visibleOptions.length, 3), 8);
+    selectArticulo.size = size;
+}
+</script>
+
+<style>
+#id_articulo {
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+}
+
+#id_articulo option {
+    padding: 8px 12px;
+    border-bottom: 1px solid #f8f9fa;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out;
+}
+
+#id_articulo option:hover {
+    background-color: #e9ecef;
+}
+
+#id_articulo option:checked {
+    background-color: #0d6efd;
+    color: white;
+}
+
+#id_articulo .no-results {
+    color: #6c757d !important;
+    background-color: transparent !important;
+    font-style: italic;
+    text-align: center;
+}
+
+#search_articulo:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+#articulo_seleccionado {
+    border-left: 4px solid #198754;
+    background-color: #f8fff9;
+}
+
+/* Scrollbar personalizado para el select */
+#id_articulo::-webkit-scrollbar {
+    width: 8px;
+}
+
+#id_articulo::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+#id_articulo::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+#id_articulo::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+</style>
+{% endblock %}

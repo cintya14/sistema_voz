@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Sistema de Inventarios{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Tarjetas de Resumen -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <a href="{{ url_for('articulos_bp.list_articulos') }}" class="text-decoration-none">
+                <div class="card bg-primary text-white hover-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 class="card-title">{{ total_articulos }}</h4>
+                                <p class="card-text">Total Artículos</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="bi bi-box-seam display-6"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('almacenes_bp.list_almacenes') }}" class="text-decoration-none">
+                <div class="card bg-success text-white hover-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 class="card-title">{{ total_almacenes }}</h4>
+                                <p class="card-text">Almacenes</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="bi bi-house-gear display-6"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('stock_almacen_bp.list_stock_bajo') }}?filter=low" class="text-decoration-none">
+                <div class="card bg-warning text-white hover-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 class="card-title">{{ stock_bajo_count }}</h4>
+                                <p class="card-text">Stock Bajo</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="bi bi-exclamation-triangle display-6"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('stock_almacen_bp.list_stock') }}?filter=critical" class="text-decoration-none">
+                <div class="card bg-danger text-white hover-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h4 class="card-title">{{ stock_critico_count }}</h4>
+                                <p class="card-text">Stock Crítico</p>
+                            </div>
+                            <div class="align-self-center">
+                                <i class="bi bi-exclamation-octagon display-6"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Movimientos Recientes -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-clock-history me-2"></i>Movimientos Recientes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if movimientos_recientes %}
+                    <div class="list-group">
+                        {% for mov in movimientos_recientes %}
+                        <a href="{{ url_for('movimientos_bp.detalle_movimiento', id_movimiento=mov.id_movimiento_cabecera) }}"
+                           class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">
+                                    <span class="badge bg-{% if mov.es_entrada %}success{% else %}danger{% endif %} me-2">
+                                        {{ mov.tipo_movimiento_nombre }}
+                                    </span>
+                                    {{ mov.almacen_nombre }}
+                                </h6>
+                                <small>{{ mov.fecha_movimiento.strftime('%d/%m/%Y') }}</small>
+                            </div>
+                            <p class="mb-1">Por: {{ mov.nombre_usuario }}</p>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No hay movimientos recientes.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Acciones Rápidas -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-lightning me-2"></i>Acciones Rápidas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <a href="{{ url_for('movimientos_bp.add_entrada') }}" class="btn btn-primary w-100 h-100 py-3">
+                                <i class="bi bi-box-arrow-in-down display-6 d-block mb-2"></i>
+                                Nueva Entrada
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{{ url_for('movimientos_bp.add_salida') }}" class="btn btn-danger w-100 h-100 py-3">
+                                <i class="bi bi-box-arrow-up display-6 d-block mb-2"></i>
+                                Nueva Salida
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{{ url_for('stock_almacen_bp.list_stock') }}" class="btn btn-info w-100 h-100 py-3">
+                                <i class="bi bi-boxes display-6 d-block mb-2"></i>
+                                Ver Stock
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="{{ url_for('articulos_bp.list_articulos') }}" class="btn btn-warning w-100 h-100 py-3">
+                                <i class="bi bi-plus-circle display-6 d-block mb-2"></i>
+                                Nuevo Artículo
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.hover-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+/* Cambiar el cursor a pointer cuando se pasa sobre las tarjetas */
+.hover-card:hover {
+    cursor: pointer;
+}
+</style>
+{% endblock %}

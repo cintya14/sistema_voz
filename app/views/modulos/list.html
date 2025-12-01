@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Listado de Módulos{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h1 class="h3 mb-0"><i class="bi bi-boxes me-2"></i>Listado de Módulos del Sistema</h1>
+                    <div class="d-flex">
+                        <a href="{{ url_for('modulos_bp.add_modulo') }}" class="btn btn-light me-2">
+                            <i class="bi bi-plus-lg me-1"></i> Añadir Módulo
+                        </a>
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-light">
+                            <i class="bi bi-arrow-left me-1"></i> Volver
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th scope="col">ID MÓDULO</th>
+                                    <th scope="col">NOMBRE DE MÓDULO</th>
+                                    <th scope="col" class="acciones-columna">ACCIONES</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if modulos %}
+                                {% for modulo in modulos %}
+                                <tr>
+                                    <td>{{ modulo.id_modulo }}</td>
+                                    <td>{{ modulo.nombre }}</td>
+                                    <td class="acciones-columna">
+                                        <a href="{{ url_for('modulos_bp.edit_modulo', id_modulo=modulo.id_modulo) }}" class="btn btn-warning btn-sm me-2">Editar</a>
+                                        <form action="{{ url_for('modulos_bp.delete_modulo', id_modulo=modulo.id_modulo) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este módulo?');">
+                                            <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">No hay módulos registrados.</td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .acciones-columna {
+        width: 150px;
+    }
+</style>
+{% endblock %}

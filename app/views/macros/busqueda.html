@@ -1,0 +1,208 @@
+<!-- views/macros/busqueda.html -->
+{% macro articulo_search_component(articulos, selected_articulo=None, show_costo=true) %}
+<div class="col-12">
+    <label for="search_articulo" class="form-label">Buscar Artículo:</label>
+    <div class="input-group">
+        <input type="text" id="search_articulo" class="form-control"
+               placeholder="Escribe para buscar artículo por código o nombre...">
+        <button type="button" class="btn btn-outline-secondary" onclick="clearSearch()">
+            <i class="bi bi-x-circle"></i>
+        </button>
+    </div>
+    <select id="id_articulo" name="id_articulo" class="form-select mt-2" required size="5" style="display: none;">
+        <option value="">Seleccionar artículo</option>
+        {% for articulo in articulos %}
+        <option value="{{ articulo.id_articulo }}"
+                data-codigo="{{ articulo.codigo }}"
+                data-nombre="{{ articulo.nombre }}"
+                data-precio-compra="{{ articulo.precio_compra }}"
+                data-precio-venta="{{ articulo.precio_venta }}">
+            {{ articulo.codigo }} - {{ articulo.nombre }}
+        </option>
+        {% endfor %}
+    </select>
+    <div id="articulo_seleccionado" class="mt-2 p-2 bg-light rounded" style="display: none;">
+        <strong>Artículo seleccionado:</strong>
+        <span id="articulo_info"></span>
+        <button type="button" class="btn btn-sm btn-outline-secondary ms-2" onclick="cambiarArticulo()">
+            <i class="bi bi-arrow-clockwise"></i> Cambiar
+        </button>
+    </div>
+</div>
+
+{% if show_costo %}
+<div class="col-12 col-md-6">
+    <label for="costo_unitario" class="form-label">Costo Unitario (S/):</label>
+    <input type="number" step="0.01" id="costo_unitario" name="costo_unitario" class="form-control" required min="0">
+</div>
+{% endif %}
+{% endmacro %}
+
+{% macro articulo_search_scripts() %}
+<script>
+function filterArticulos(searchTerm) {
+    const selectArticulo = document.getElementById('id_articulo');
+    const options = selectArticulo.getElementsByTagName('option');
+    let hasResults = false;
+
+    for (let i = 0; i < options.length; i++) {
+        const option = options[i];
+        if (option.value === '' || option.classList.contains('no-results')) {
+            continue;
+        }
+        const text = option.textContent.toLowerCase();
+        if (text.includes(searchTerm.toLowerCase())) {
+            option.style.display = '';
+            hasResults = true;
+        } else {
+            option.style.display = 'none';
+        }
+    }
+
+    const noResultsOption = selectArticulo.querySelector('.no-results');
+    if (!hasResults && searchTerm.length > 0) {
+        if (!noResultsOption) {
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = 'No se encontraron artículos';
+            option.className = 'no-results text-muted';
+            option.disabled = true;
+            selectArticulo.appendChild(option);
+        }
+    } else if (noResultsOption) {
+        noResultsOption.remove();
+    }
+    adjustSelectSize();
+}
+
+function adjustSelectSize() {
+    const selectArticulo = document.getElementById('id_articulo');
+    const visibleOptions = Array.from(selectArticulo.options).filter(opt =>
+        opt.style.display !== 'none' && !opt.disabled && !opt.classList.contains('no-results')
+    );
+    const size = Math.min(Math.max(visibleOptions.length, 3), 8);
+    selectArticulo.size = size;
+}
+
+function clearSearch() {
+    const searchInput = document.getElementById('search_articulo');
+    const selectArticulo = document.getElementById('id_articulo');
+    searchInput.value = '';
+    searchInput.focus();
+    filterArticulos('');
+    selectArticulo.selectedIndex = 0;
+    selectArticulo.style.display = 'block';
+}
+
+function cambiarArticulo() {
+    document.getElementById('articulo_seleccionado').style.display = 'none';
+    document.getElementById('id_articulo').style.display = 'block';
+    document.getElementById('id_articulo').selectedIndex = 0;
+    document.getElementById('search_articulo').value = '';
+    document.getElementById('search_articulo').focus();
+    document.getElementById('costo_unitario').value = '';
+    filterArticulos('');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search_articulo');
+    const selectArticulo = document.getElementById('id_articulo');
+    const articuloSeleccionadoDiv = document.getElementById('articulo_seleccionado');
+    const articuloInfo = document.getElementById('articulo_info');
+
+    let isMouseInSelect = false;
+
+    filterArticulos('');
+    selectArticulo.style.display = 'none';
+
+    searchInput.addEventListener('input', function() {
+        filterArticulos(this.value);
+        if (this.value.length > 0) {
+            selectArticulo.style.display = 'block';
+        }
+    });
+
+    searchInput.addEventListener('focus', function() {
+        selectArticulo.style.display = 'block';
+        articuloSeleccionadoDiv.style.display = 'none';
+        filterArticulos(this.value);
+    });
+
+    selectArticulo.addEventListener('mouseenter', function() {
+        isMouseInSelect = true;
+    });
+
+    selectArticulo.addEventListener('mouseleave', function() {
+        isMouseInSelect = false;
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !selectArticulo.contains(e.target) && !isMouseInSelect) {
+            selectArticulo.style.display = 'none';
+        }
+    });
+
+    selectArticulo.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        if (selectedOption && selectedOption.value) {
+            const codigo = selectedOption.getAttribute('data-codigo');
+            const nombre = selectedOption.getAttribute('data-nombre');
+            const precio = selectedOption.getAttribute('data-precio-compra');
+
+            articuloInfo.textContent = `${codigo} - ${nombre}`;
+            articuloSeleccionadoDiv.style.display = 'block';
+            selectArticulo.style.display = 'none';
+            searchInput.value = '';
+
+            if (precio && precio !== 'None') {
+                document.getElementById('costo_unitario').value = parseFloat(precio).toFixed(2);
+            }
+
+            document.getElementById('cantidad').focus();
+        }
+    });
+
+    searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            selectArticulo.style.display = 'none';
+            this.blur();
+        }
+    });
+});
+</script>
+
+<style>
+#id_articulo {
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+}
+#id_articulo option {
+    padding: 8px 12px;
+    border-bottom: 1px solid #f8f9fa;
+    cursor: pointer;
+}
+#id_articulo option:hover {
+    background-color: #e9ecef;
+}
+#id_articulo option:checked {
+    background-color: #0d6efd;
+    color: white;
+}
+#id_articulo .no-results {
+    color: #6c757d !important;
+    background-color: transparent !important;
+    font-style: italic;
+}
+#search_articulo:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+#articulo_seleccionado {
+    border-left: 4px solid #198754;
+    background-color: #f8fff9;
+}
+</style>
+{% endmacro %}

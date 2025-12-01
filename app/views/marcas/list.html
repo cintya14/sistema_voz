@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Listado de Marcas{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h1 class="h3 mb-0"><i class="bi bi-bookmark-fill me-2"></i>Listado de Marcas</h1>
+                    <div class="d-flex">
+                        <a href="{{ url_for('marcas_bp.add_marca') }}" class="btn btn-light me-2">
+                            <i class="bi bi-plus-lg me-1"></i> Añadir Marca
+                        </a>
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-light">
+                            <i class="bi bi-arrow-left me-1"></i> Volver
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th scope="col" style="width: 5%;">ID</th>
+                                    <th scope="col" style="width: 25%;">NOMBRE DE MARCA</th>
+                                    <th scope="col">DESCRIPCIÓN</th>
+                                    <th scope="col" class="acciones-columna">ACCIONES</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if marcas %}
+                                {% for marca in marcas %}
+                                <tr>
+                                    <td>{{ marca.id_marca }}</td>
+                                    <td>{{ marca.nombre }}</td>
+                                    <td>{{ marca.descripcion if marca.descripcion else 'Sin descripción' }}</td>
+                                    <td class="acciones-columna">
+                                        <a href="{{ url_for('marcas_bp.edit_marca', id_marca=marca.id_marca) }}" class="btn btn-warning btn-sm me-2">Editar</a>
+                                        <form action="{{ url_for('marcas_bp.delete_marca', id_marca=marca.id_marca) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta marca?');">
+                                            <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">No hay marcas registradas.</td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .acciones-columna {
+        width: 150px;
+    }
+</style>
+{% endblock %}

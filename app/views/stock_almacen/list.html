@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% from "macros/pagination.html" import render_pagination, render_pagination_info, render_per_page_selector %}
+
+{% block title %}Stock en Almacenes{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3"><i class="bi bi-boxes me-2"></i>Stock en Almacenes</h1>
+        <div>
+            <a href="{{ url_for('stock_almacen_bp.list_stock_bajo') }}" class="btn btn-warning me-2">
+                <i class="bi bi-exclamation-triangle me-1"></i> Stock Bajo
+            </a>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Volver
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" id="filtrosForm">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="almacen" class="form-label">Almacén:</label>
+                        <select class="form-select" id="almacen" name="almacen">
+                            <option value="">Todos los almacenes</option>
+                            {% for almacen in almacenes %}
+                            <option value="{{ almacen.id_almacen }}" {% if filtro_almacen == almacen.id_almacen|string %}selected{% endif %}>
+                                {{ almacen.nombre }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="estado" class="form-label">Estado:</label>
+                        <select class="form-select" id="estado" name="estado">
+                            <option value="">Todos los estados</option>
+                            <option value="NORMAL" {% if filtro_estado == 'NORMAL' %}selected{% endif %}>Normal</option>
+                            <option value="BAJO" {% if filtro_estado == 'BAJO' %}selected{% endif %}>Bajo</option>
+                            <option value="CRÍTICO" {% if filtro_estado == 'CRÍTICO' %}selected{% endif %}>Crítico</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="search" class="form-label">Buscar:</label>
+                        <input type="text" class="form-control" id="search" name="search"
+                               value="{{ search }}" placeholder="Nombre o código del artículo...">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-funnel me-1"></i> Filtrar
+                        </button>
+                        <a href="{{ url_for('stock_almacen_bp.list_stock') }}" class="btn btn-outline-secondary" title="Limpiar filtros">
+                            <i class="bi bi-x-circle"></i>
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <!-- Información de paginación y selector -->
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+                <div>
+                    {{ render_pagination_info(pagination) }}
+                </div>
+                <div>
+                    {{ render_per_page_selector(pagination.per_page, 'stock_almacen_bp.list_stock',
+                                               almacen=filtro_almacen, estado=filtro_estado, search=search) }}
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Almacén</th>
+                            <th>Artículo</th>
+                            <th>Código</th>
+                            <th>Stock Actual</th>
+                            <th>Stock Mínimo</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in stock %}
+                        <tr class="fila-stock">
+                            <td>{{ item.almacen_nombre }}</td>
+                            <td>{{ item.articulo_nombre }}</td>
+                            <td>{{ item.articulo_codigo }}</td>
+                            <td>
+                                <span class="badge bg-{% if item.estado_stock == 'CRÍTICO' %}danger{% elif item.estado_stock == 'BAJO' %}warning{% else %}success{% endif %} fs-6">
+                                    {{ item.stock_actual }}
+                                </span>
+                            </td>
+                            <td>{{ item.stock_minimo }}</td>
+                            <td>
+                                <span class="badge bg-{% if item.estado_stock == 'CRÍTICO' %}danger{% elif item.estado_stock == 'BAJO' %}warning{% else %}success{% endif %}">
+                                    {{ item.estado_stock }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-5">
+                                <i class="bi bi-inbox fs-1 d-block mb-3 text-secondary"></i>
+                                <strong>No hay stock registrado</strong>
+                                {% if filtro_almacen or filtro_estado or search %}
+                                <p class="mb-0 mt-2">Intenta ajustar los filtros de búsqueda</p>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Componente de paginación reutilizable -->
+            {{ render_pagination(pagination, 'stock_almacen_bp.list_stock', almacen=filtro_almacen, estado=filtro_estado, search=search) }}
+        </div>
+    </div>
+</div>
+
+<style>
+.fila-stock:hover {
+    background-color: #f8f9fa;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+</style>
+{% endblock %}

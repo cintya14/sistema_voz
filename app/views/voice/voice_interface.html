@@ -1,0 +1,634 @@
+{% extends "base.html" %}
+
+{% block title %}Asistente de Voz - Sistema de Inventarios{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3">
+    <!-- Header -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center">
+        <h1 class="h4 mb-0 me-3">
+            <i class="bi bi-mic-fill text-primary me-2"></i>Asistente de Voz
+        </h1>
+        <p class="text-muted mb-0 small">Controla tu inventario mediante comandos de voz</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('movimientos_bp.list_entradas') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Volver
+        </a>
+    </div>
+</div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Panel Principal - Interacción -->
+        <div class="col-lg-5">
+            <div class="card shadow-sm border-0 mb-3 card-fixed-height">
+                <div class="card-header bg-gradient-primary text-white border-0 py-2">
+                    <h6 class="card-title mb-0 small">
+                        <i class="bi bi-chat-left-text me-2"></i>Interacción por Voz
+                    </h6>
+                </div>
+                <div class="card-body p-2">
+                    <!-- Estado del Sistema con Micrófono -->
+                    <div class="voice-control-panel mb-2">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div id="system-status" class="flex-grow-1 me-2">
+                                <div class="status-content">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-info-circle me-2 text-primary" id="status-icon"></i>
+                                        <div>
+                                            <strong id="status-text" class="very-small d-block">Sistema en espera</strong>
+                                            <div class="very-small text-muted" id="status-detail">
+                                                Di "inventario activar" o haz clic en el micrófono
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Botón de Micrófono Compacto -->
+                            <div class="voice-button-container">
+                                <button id="voice-btn" class="btn btn-primary btn-mic-compact rounded-circle shadow-sm">
+                                    <i class="bi bi-mic fs-5"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comando Reconocido -->
+                    <div class="mb-2">
+                        <label class="form-label fw-semibold text-dark very-small mb-1">
+                            <i class="bi bi-soundwave me-1"></i>Comando de Voz:
+                        </label>
+                        <div id="command-text" class="command-display border rounded p-2 bg-light">
+                            <div class="text-center text-muted py-1">
+                                <i class="bi bi-mic-mute me-1"></i><span class="very-small">El comando aparecerá aquí...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Resultado del Análisis -->
+                    <div id="result-container" class="mb-3">
+                        <label class="form-label fw-semibold text-dark very-small mb-1">
+                            <i class="bi bi-robot me-1"></i>Respuesta del Sistema:
+                        </label>
+                        <div id="result-text" class="result-display border rounded p-2 bg-white">
+                            <div class="text-center text-muted py-2">
+                                <i class="bi bi-robot fs-4 text-secondary opacity-50 mb-1"></i>
+                                <p class="very-small mb-0">La respuesta aparecerá aquí</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sugerencias -->
+                    <div id="suggestions-container" class="d-none">
+                        <label class="form-label fw-semibold text-warning very-small mb-1">
+                            <i class="bi bi-lightbulb-fill me-1"></i>Sugerencias:
+                        </label>
+                        <div id="suggestions-list" class="suggestions-display border rounded bg-warning bg-opacity-10 p-2">
+                            <!-- Las sugerencias se cargarán aquí -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel Derecho - Resultados de Búsqueda -->
+        <div class="col-lg-7">
+            <div id="search-results-container" class="card shadow-sm border-0 mb-3 card-fixed-height d-none">
+                <div class="card-header bg-gradient-info text-white border-0 py-2">
+                    <h6 class="card-title mb-0 small">
+                        <i class="bi bi-search me-2"></i>Resultados de Búsqueda
+                    </h6>
+                </div>
+                <div class="card-body p-2">
+                    <div id="search-results" class="search-results-display">
+                        <!-- Los resultados se cargarán aquí dinámicamente -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Placeholder cuando no hay resultados -->
+            <div id="search-placeholder" class="card shadow-sm border-0 mb-3 border-dashed card-fixed-height">
+                <div class="card-body text-center d-flex flex-column justify-content-center align-items-center">
+                    <i class="bi bi-search fs-1 text-muted opacity-50 mb-2"></i>
+                    <p class="text-muted mb-0 small">Los resultados de búsqueda aparecerán aquí</p>
+                    <small class="text-muted very-small">Realiza una búsqueda por voz para ver los resultados</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Paneles Inferiores en Horizontal -->
+    <div class="row mt-3">
+        <!-- Comandos de Ejemplo -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-header bg-gradient-light border-0 py-2">
+                    <h6 class="card-title mb-0 small text-primary">
+                        <i class="bi bi-lightbulb me-2"></i>Comandos de Ejemplo
+                    </h6>
+                </div>
+                <div class="card-body p-2">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary btn-sm text-start example-command py-2">
+                            <i class="bi bi-search me-2"></i><span class="small">"buscar hojas A4"</span>
+                        </button>
+                        <button class="btn btn-outline-success btn-sm text-start example-command py-2">
+                            <i class="bi bi-box-arrow-in-down me-2"></i><span class="small">"registrar entrada de 50 cuadernos"</span>
+                        </button>
+                        <button class="btn btn-outline-info btn-sm text-start example-command py-2">
+                            <i class="bi bi-clipboard-data me-2"></i><span class="small">"consultar stock de lápices"</span>
+                        </button>
+                        <button class="btn btn-outline-warning btn-sm text-start example-command py-2">
+                            <i class="bi bi-box-arrow-up me-2"></i><span class="small">"registrar salida de 10 unidades"</span>
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm text-start example-command py-2">
+                            <i class="bi bi-info-circle me-2"></i><span class="small">"información del producto 00001"</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información del Sistema -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-header bg-gradient-light border-0 py-2">
+                    <h6 class="card-title mb-0 small text-primary">
+                        <i class="bi bi-gear me-2"></i>Información del Sistema
+                    </h6>
+                </div>
+                <div class="card-body p-3">
+                    <div class="info-item mb-2 pb-2 border-bottom">
+                        <small class="text-muted d-block very-small mb-1">Estado de Conexión:</small>
+                        <span id="connection-status" class="badge bg-success">
+                            <i class="bi bi-check-circle me-1"></i>Conectado
+                        </span>
+                    </div>
+                    <div class="info-item mb-2 pb-2 border-bottom">
+                        <small class="text-muted d-block very-small mb-1">Última Actualización:</small>
+                        <span id="last-update" class="small">{{ now.strftime('%d/%m/%Y %H:%M') if now else '--/--/---- --:--' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <small class="text-muted d-block very-small mb-1">Soporte de Voz:</small>
+                        <span class="badge bg-info">
+                            <i class="bi bi-translate me-1"></i>Español (ES)
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Acciones Rápidas -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-header bg-gradient-light border-0 py-2">
+                    <h6 class="card-title mb-0 small text-primary">
+                        <i class="bi bi-lightning-charge me-2"></i>Acciones Rápidas
+                    </h6>
+                </div>
+                <div class="card-body p-2">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('articulos_bp.list_articulos') }}" class="btn btn-light btn-sm py-2 text-start quick-action-btn">
+                            <i class="bi bi-box me-2 text-primary"></i> <span class="small">Ver Artículos</span>
+                        </a>
+                        <a href="{{ url_for('movimientos_bp.list_entradas') }}" class="btn btn-light btn-sm py-2 text-start quick-action-btn">
+                            <i class="bi bi-box-arrow-in-down me-2 text-success"></i> <span class="small">Ver Entradas</span>
+                        </a>
+                        <a href="{{ url_for('movimientos_bp.list_salidas') }}" class="btn btn-light btn-sm py-2 text-start quick-action-btn">
+                            <i class="bi bi-box-arrow-up me-2 text-warning"></i> <span class="small">Ver Salidas</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información de Debug (Colapsable) -->
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body py-2">
+                    <details>
+                        <summary class="text-muted very-small cursor-pointer user-select-none">
+                            <i class="bi bi-terminal me-1"></i>Información de Desarrollo
+                        </summary>
+                        <pre id="debug-info" class="bg-dark text-light p-2 very-small rounded mt-2 mb-0" style="max-height: 150px; overflow-y: auto;"></pre>
+                    </details>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Incluir el JavaScript de voz -->
+<script src="{{ url_for('static', filename='voice/voice.js') }}"></script>
+
+<style>
+
+/* ✅ NUEVO: Estilos para estado "despierto" */
+.alert-awake {
+    border-left: 4px solid #28a745 !important;
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%) !important;
+}
+
+/* Indicador de estado de activación */
+.status-awake {
+    animation: pulse-awake 2s infinite;
+}
+
+@keyframes pulse-awake {
+    0% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+    }
+}
+
+/* Botón cuando está activo por voz */
+.btn-awake {
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+    animation: pulse-mic 1.5s infinite;
+}
+/* Variables de color */
+:root {
+    --primary-color: #4e73df;
+    --success-color: #1cc88a;
+    --info-color: #36b9cc;
+    --warning-color: #f6c23e;
+    --danger-color: #e74a3b;
+    --light-color: #f8f9fc;
+    --border-color: #e3e6f0;
+}
+
+/* Gradientes */
+.bg-gradient-primary {
+    background: linear-gradient(180deg, #4e73df 10%, #224abe 100%);
+}
+
+.bg-gradient-info {
+    background: linear-gradient(180deg, #36b9cc 10%, #258391 100%);
+}
+
+.bg-gradient-light {
+    background: linear-gradient(180deg, #ffffff 0%, #f8f9fc 100%);
+}
+
+/* Panel de control de voz */
+.voice-control-panel {
+    background: linear-gradient(135deg, #f8f9fc 0%, #e9ecef 100%);
+    border-radius: 8px;
+    padding: 0.5rem;
+    border: 2px solid #e3e6f0;
+}
+
+/* Botón de micrófono compacto */
+.btn-mic-compact {
+    width: 50px;
+    height: 50px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.btn-mic-compact:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(78, 115, 223, 0.3) !important;
+}
+
+.btn-mic-compact.recording {
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+    animation: pulse-mic 1.5s infinite;
+}
+
+@keyframes pulse-mic {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+    }
+    50% {
+        transform: scale(1.08);
+        box-shadow: 0 0 0 12px rgba(220, 53, 69, 0);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+    }
+}
+
+.voice-button-container {
+    text-align: center;
+    flex-shrink: 0;
+}
+
+/* Altura fija para los cards superiores */
+.card-fixed-height {
+    height: 420px;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-fixed-height .card-body {
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* Displays de contenido */
+.command-display {
+    min-height: 60px;
+    max-height: 100px;
+    overflow-y: auto;
+    transition: all 0.3s ease;
+    font-size: 0.85rem;
+}
+
+.result-display {
+    min-height: 180px;
+    max-height: 260px;
+    overflow-y: auto;
+    transition: all 0.3s ease;
+    font-size: 0.85rem;
+}
+
+.search-results-display {
+    max-height: 100%;
+    overflow-y: auto;
+}
+
+.suggestions-display {
+    border-left: 4px solid #f6c23e !important;
+}
+
+/* Placeholder de búsqueda */
+.border-dashed {
+    border: 2px dashed #e3e6f0 !important;
+    background-color: #f8f9fc;
+}
+
+#search-placeholder {
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+}
+
+/* Tablas en resultados de búsqueda */
+#search-results .table {
+    font-size: 0.8rem;
+    margin-bottom: 0;
+}
+
+#search-results .table td,
+#search-results .table th {
+    padding: 0.4rem;
+    vertical-align: middle;
+}
+
+#search-results .table thead th {
+    background-color: #f8f9fc;
+    border-bottom: 2px solid #e3e6f0;
+    font-weight: 600;
+    color: #4e73df;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+#search-results .table-hover tbody tr:hover {
+    background-color: rgba(78, 115, 223, 0.05);
+}
+
+/* Botones de acción en tablas */
+.btn-action {
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 0.8rem;
+}
+
+/* Cards mejorados */
+.card {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.card-header {
+    border-bottom: none;
+}
+
+/* Botones de ejemplo */
+.example-command {
+    transition: all 0.2s ease;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.example-command:hover {
+    transform: translateX(5px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Botones de acción rápida */
+.quick-action-btn {
+    transition: all 0.2s ease;
+    border: 1px solid #e3e6f0;
+}
+
+.quick-action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #fff !important;
+}
+
+/* Info items */
+.info-item:last-child {
+    border-bottom: none !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+/* Badges mejorados */
+.badge {
+    font-size: 0.72rem;
+    padding: 0.4em 0.75em;
+    font-weight: 500;
+}
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Utilidades */
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.user-select-none {
+    user-select: none;
+}
+
+.very-small {
+    font-size: 0.7rem;
+}
+
+.small {
+    font-size: 0.875rem;
+}
+
+.fw-semibold {
+    font-weight: 600;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card {
+    animation: fadeIn 0.3s ease;
+}
+
+/* Confirmación de movimiento */
+.movement-confirmation {
+    border-left: 4px solid #ffc107;
+    background-color: #fffbf0;
+    padding: 1rem;
+    border-radius: 4px;
+    margin: 0.5rem 0;
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+    .voice-control-panel {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .voice-button-container {
+        margin-top: 1rem;
+    }
+
+    #search-placeholder {
+        min-height: 200px;
+    }
+}
+
+@media (max-width: 576px) {
+    .btn-mic-compact {
+        width: 55px;
+        height: 55px;
+    }
+}
+
+/* Mejoras de accesibilidad */
+.btn:focus,
+.btn-mic-compact:focus {
+    outline: 2px solid #4e73df;
+    outline-offset: 2px;
+}
+
+details summary::-webkit-details-marker {
+    display: none;
+}
+
+details summary {
+    list-style: none;
+}
+
+details summary:hover {
+    color: #4e73df !important;
+}
+
+/* Reducir el tamaño del mensaje de estado/confirmación */
+.status-content {
+    padding: 0.25rem !important;
+}
+
+#system-status {
+    min-height: auto !important;
+    padding: 0.25rem 0.5rem !important;
+}
+
+/* Si el mensaje verde tiene una clase específica, agrega esto */
+.alert-success, .bg-success, .confirmation-message {
+    padding: 0.25rem 0.5rem !important;
+    margin: 0.25rem 0 !important;
+    font-size: 0.75rem !important;
+}
+
+/* Asegurar que el contenedor principal no sea muy alto */
+.voice-control-panel {
+    min-height: auto !important;
+    padding: 0.4rem !important;
+}
+
+/* Reducir espacio del header */
+.row.mb-3 {
+    margin-bottom: 1rem !important; /* Reducido de mb-3 (1rem) a menos */
+}
+
+.card-header {
+    padding: 0.5rem 1rem !important; /* Reducir padding del card header */
+}
+
+
+
+
+</style>
+
+<script>
+// Mostrar/ocultar el placeholder cuando aparecen resultados de búsqueda
+document.addEventListener('DOMContentLoaded', function() {
+    const searchContainer = document.getElementById('search-results-container');
+    const searchPlaceholder = document.getElementById('search-placeholder');
+
+    // Observar cambios en el contenedor de resultados
+    const observer = new MutationObserver(function(mutations) {
+        if (searchContainer.classList.contains('d-none')) {
+            searchPlaceholder.classList.remove('d-none');
+        } else {
+            searchPlaceholder.classList.add('d-none');
+        }
+    });
+
+    observer.observe(searchContainer, {
+        attributes: true,
+        attributeFilter: ['class']
+    });
+});
+</script>
+{% endblock %}

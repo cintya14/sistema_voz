@@ -1,0 +1,127 @@
+:root {
+  --primary-color: #3498db;
+  --secondary-color: #2c3e50;
+  --bg-color: #ecf0f1;
+}
+
+body {
+  overflow-x: hidden;
+  background-color: var(--bg-color);
+}
+
+#wrapper {
+  display: flex;
+}
+
+#wrapper.toggled #sidebar-wrapper {
+  margin-left: -250px;
+}
+
+#wrapper.toggled #page-content-wrapper {
+  margin-left: 0;
+}
+
+#sidebar-wrapper {
+  min-height: 100vh;
+  width: 250px;
+  background-color: var(--secondary-color);
+  color: #fff;
+  transition: margin 0.25s ease-out;
+  display: flex;
+  flex-direction: column;
+}
+
+#sidebar-wrapper .sidebar-heading {
+  padding: 1.5rem;
+  font-size: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#sidebar-wrapper .list-group-item {
+  border: none;
+  border-radius: 0;
+  padding-left: 1.5rem;
+  font-weight: normal;
+}
+
+#sidebar-wrapper .list-group-item:hover,
+#sidebar-wrapper .list-group-item:focus {
+  background-color: #34495e !important;
+  color: #fff !important;
+}
+
+/* Regla CSS para asegurar que los íconos sean de color blanco */
+#sidebar-wrapper .list-group-item i {
+  color: #fff;
+}
+
+#sidebar-wrapper .list-unstyled {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#sidebar-wrapper .list-unstyled li a {
+  padding-left: 2rem !important;
+  background-color: var(--secondary-color);
+  border-left: 2px solid transparent;
+}
+
+#sidebar-wrapper .list-unstyled li a:hover {
+  background-color: #34495e !important;
+  border-left: 2px solid var(--primary-color);
+}
+
+#page-content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  transition: margin 0.25s ease-out;
+}
+
+.navbar {
+  box-shadow: 0 2px 4px rgba(0,0,0,.04);
+  padding: 1rem 1.5rem;
+}
+
+#main-content {
+  flex-grow: 1;
+}
+
+.footer {
+  background-color: #f8f9fa !important;
+  border-top: 1px solid #e7e7e7;
+  padding: 1rem 1.5rem;
+}
+
+/* Ajustes para el pie de página */
+.footer span {
+  font-size: 0.85rem;
+}
+
+/* Custom CSS para rotar el ícono de chevron */
+.chevron-icon {
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Aplica la rotación cuando el menú está expandido */
+a[aria-expanded="true"] .chevron-icon {
+  transform: rotate(90deg);
+}
+
+/* Código para el divisor de menú en Tablas Generales */
+.menu-divider-custom {
+    /* Mismo color de fondo que el menú para que se "funda" */
+    background-color: #343a40;
+    /* El grosor de la línea */
+    height: 1px;
+    /* Un color de fondo ligeramente más claro para la línea */
+    background-image: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
+    /* Estética: un poco de aire arriba y abajo */
+    margin: 8px 15px;
+    /* Garantiza que no aparezca como un ítem de lista normal */
+    list-style: none;
+    padding: 0;
+    /* Le da la apariencia de una línea más sutil */
+    opacity: 0.5;
+}

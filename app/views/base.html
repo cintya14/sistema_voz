@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+
+  <title>{% block title %}Sistema de Inventarios{% endblock %}</title>
+
+</head>
+<body>
+  <div class="d-flex" id="wrapper">
+    <div class="bg-dark border-right" id="sidebar-wrapper">
+      <div class="sidebar-heading text-white d-flex align-items-center">
+        <i class="bi bi-graph-up me-2"></i>
+        <span>Sistema Inventarios</span>
+      </div>
+        <ul class="nav flex-column list-group list-group-flush" id="sidebarAccordion">
+            <li class="nav-item">
+              <a class="nav-link list-group-item list-group-item-action bg-dark text-white" href="{{ url_for('index') }}"><i class="bi bi-house-door me-2"></i>Inicio</a>
+            </li>
+
+              <!-- NUEVO: Ítem del Asistente de Voz -->
+            <li class="nav-item">
+                <a class="nav-link list-group-item list-group-item-action bg-dark text-white" href="{{ url_for('voice_bp.voice_interface') }}">
+                    <i class="bi bi-mic-fill me-2"></i>Asistente de Voz
+                </a>
+            </li>
+    <!-- Fin del nuevo ítem -->
+        </ul>
+
+
+        {% if session.get('user_role') == 'ADMINISTRADOR' %}
+        <li class="nav-item">
+          <a class="nav-link list-group-item list-group-item-action bg-dark text-white d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#configuracionSubmenu" role="button" aria-expanded="false" aria-controls="configuracionSubmenu">
+            <div><i class="bi bi-people-fill me-2"></i>Configuracion</div>
+            <i class="bi bi-chevron-right ms-auto chevron-icon"></i>
+          </a>
+          <div class="collapse" id="configuracionSubmenu" data-bs-parent="#sidebarAccordion">
+                <ul class="nav flex-column ms-3">
+                    <li><a class="nav-link text-white" href="{{ url_for('roles_bp.list_roles') }}">- Roles</a></li>
+                    <li><a class="nav-link text-white" href="{{ url_for('usuarios_bp.list_usuarios') }}">- Usuarios</a></li>
+                    <li><a class="nav-link text-white" href="{{ url_for('modulos_bp.list_modulos') }}">- Modulo de Operación</a></li>
+                    <li><a class="nav-link text-white" href="#">- Permisos de Operación</a></li>
+                    <li><a class="nav-link text-white" href="#">- Rol de Operación</a></li>
+                </ul>
+            </div>
+        </li>
+        {% endif %}
+
+       <li class="nav-item">
+  <a class="nav-link list-group-item list-group-item-action bg-dark text-white d-flex justify-content-between align-items-center"
+     data-bs-toggle="collapse" href="#tablasSubmenu" role="button" aria-expanded="false" aria-controls="tablasSubmenu">
+      <div><i class="bi bi-people-fill me-2"></i>Tablas Generales</div>
+      <i class="bi bi-chevron-right ms-auto chevron-icon"></i>
+  </a>
+
+  <div class="collapse" id="tablasSubmenu" data-bs-parent="#sidebarAccordion">
+    <ul class="nav flex-column ms-3">
+      <li><a class="nav-link text-white" href="{{ url_for('empresa_bp.view_empresa') }}">- Empresa</a></li>
+      <li><a class="nav-link text-white" href="{{ url_for('tipos_documento_bp.list_tipos_documento') }}">- Tipo de Documento</a></li>
+      <li><a class="nav-link text-white" href="{{ url_for('series_documento_bp.list_series_documento') }}">- Serie de Documento</a></li>
+
+      <li><hr class="menu-divider-custom"></li>
+
+      <li><a class="nav-link text-white" href="{{ url_for('categorias_bp.list_categorias') }}">- Categorías</a></li>
+      <li><a class="nav-link text-white" href="{{ url_for('marcas_bp.list_marcas') }}">- Marcas</a></li>
+
+      <li><hr class="menu-divider-custom"></li>
+
+      <li><a class="nav-link text-white" href="{{ url_for('unidades_medida_bp.list_unidades_medida') }}">- Unidad de Medida</a></li>
+    </ul>
+  </div>
+</li>
+
+
+        <li class="nav-item">
+          <a class="nav-link list-group-item list-group-item-action bg-dark text-white d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#inventariosSubmenu" role="button" aria-expanded="false" aria-controls="inventariosSubmenu">
+            <div><i class="bi bi-calendar2-check me-2"></i>Inventarios</div>
+            <i class="bi bi-chevron-right ms-auto chevron-icon"></i>
+          </a>
+          <div class="collapse" id="inventariosSubmenu" data-bs-parent="#sidebarAccordion">
+            <ul class="nav flex-column ms-3">
+              <li><a class="nav-link text-white" href="{{ url_for('articulos_bp.list_articulos') }}">- Artículos</a></li>
+            </ul>
+          </div>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link list-group-item list-group-item-action bg-dark text-white d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#almacenSubmenu" role="button" aria-expanded="false" aria-controls="almacenSubmenu">
+            <div><i class="bi bi-person me-2"></i>Almacen</div>
+            <i class="bi bi-chevron-right ms-auto chevron-icon"></i>
+          </a>
+            <div class="collapse" id="almacenSubmenu" data-bs-parent="#sidebarAccordion">
+                <ul class="nav flex-column ms-3">
+                    <li><a class="nav-link text-white" href="{{ url_for('almacenes_bp.list_almacenes') }}">- Almacenes</a></li>
+                    <li><a class="nav-link text-white" href="{{ url_for('stock_almacen_bp.list_stock') }}">- Stock Almacenes</a></li>
+                    <li><a class="nav-link text-white" href="{{ url_for('inventario_inicial_bp.list_inventario_inicial') }}">- Inventario Inicial</a></li>
+                    <li><a class="nav-link text-white" href="{{ url_for('conteo_fisico_bp.list_conteos') }}">- Conteo Fisico</a></li>
+                    <li><a class="nav-link text-white" href="{{ url_for('kardex_bp.index_kardex') }}">- Kardex</a></li>
+                </ul>
+            </div>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link list-group-item list-group-item-action bg-dark text-white d-flex justify-content-between align-items-center"
+               data-bs-toggle="collapse" href="#movimientosSubmenu" role="button" aria-expanded="false" aria-controls="movimientosSubmenu">
+                <div><i class="bi bi-folder me-2"></i>Movimientos</div>
+                <i class="bi bi-chevron-right ms-auto chevron-icon"></i>
+            </a>
+            <div class="collapse" id="movimientosSubmenu" data-bs-parent="#sidebarAccordion">
+                <ul class="nav flex-column ms-3">
+                    <li><a class="nav-link text-white" href="{{ url_for('movimientos_bp.list_entradas') }}">- Entradas</a></li>
+                    <li><a class="nav-link text-white" href="{{ url_for('movimientos_bp.list_salidas') }}">- Salidas</a></li>
+                </ul>
+            </div>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link list-group-item list-group-item-action bg-dark text-white d-flex justify-content-between align-items-center"
+               data-bs-toggle="collapse" href="#comprasSubmenu" role="button" aria-expanded="false" aria-controls="comprasSubmenu">
+                <div><i class="bi bi-folder me-2"></i>Compras</div>
+                <i class="bi bi-chevron-right ms-auto chevron-icon"></i>
+            </a>
+            <div class="collapse" id="comprasSubmenu" data-bs-parent="#sidebarAccordion">
+                <ul class="nav flex-column ms-3">
+                    <li><a class="nav-link text-white" href="{{ url_for('proveedores_bp.list_proveedores') }}">- Proveedores</a></li>
+                </ul>
+            </div>
+        </li>
+
+
+      <li class="nav-item">
+            <a class="nav-link list-group-item list-group-item-action bg-dark text-white d-flex justify-content-between align-items-center"
+               data-bs-toggle="collapse" href="#ventasSubmenu" role="button" aria-expanded="false" aria-controls="ventasSubmenu">
+                <div><i class="bi bi-bar-chart-line me-2"></i>Ventas</div>
+                <i class="bi bi-chevron-right ms-auto chevron-icon"></i>
+            </a>
+            <div class="collapse" id="ventasSubmenu" data-bs-parent="#sidebarAccordion">
+                <ul class="nav flex-column ms-3">
+                    <li><a class="nav-link text-white" href="{{ url_for('clientes_bp.list_clientes') }}">- Clientes</a></li>
+                    <li><a class="nav-link text-white" href="{{ url_for('ventas_bp.list_ventas') }}">- Listar Ventas</a></li>
+                    <li><a class="nav-link text-white" href="{{ url_for('ventas_bp.add_venta') }}">- Nueva Venta</a></li>
+                </ul>
+            </div>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link list-group-item list-group-item-action bg-dark text-white d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#reportesSubmenu" role="button" aria-expanded="false" aria-controls="reportesSubmenu">
+            <div><i class="bi bi-bar-chart-line me-2"></i>Reportes</div>
+            <i class="bi bi-chevron-right ms-auto chevron-icon"></i>
+          </a>
+          <div class="collapse" id="reportesSubmenu" data-bs-parent="#sidebarAccordion">
+            <ul class="nav flex-column ms-3">
+              <li><a class="nav-link text-white" href="{{ url_for('reportes_bp.index_reportes') }}">- Dashboard de Reportes</a></li>
+              <li><a class="nav-link text-white" href="{{ url_for('reportes_bp.reporte_kardex') }}">- Kardex por Artículo</a></li>
+              <li><a class="nav-link text-white" href="{{ url_for('reportes_bp.reporte_stock') }}">- Stock Actual</a></li>
+              <li><a class="nav-link text-white" href="{{ url_for('reportes_bp.reporte_movimientos') }}">- Movimientos</a></li>
+            </ul>
+          </div>
+        </li>
+
+    </div>
+    <div id="page-content-wrapper">
+      {% if 'user_id' in session %}
+      <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+          <div class="container-fluid">
+            <button class="btn btn-outline-secondary" id="menu-toggle"><i class="bi bi-list"></i></button>
+            <span class="navbar-brand mb-0 h1 ms-3">Panel de Control</span>
+            <div class="d-flex ms-auto align-items-center">
+              <span class="text-secondary me-3">Bienvenido, {{ session.get('username') }} ({{ session.get('user_role') }})</span>
+              <a href="#" class="btn btn-outline-secondary me-2">
+                <i class="bi bi-gear me-1"></i>Configuración
+              </a>
+              <form action="{{ url_for('auth_bp.logout') }}" method="post" class="d-inline">
+                <button type="submit" class="btn btn-outline-danger">
+                  <i class="bi bi-box-arrow-right me-1"></i>Cerrar sesión
+                </button>
+              </form>
+            </div>
+          </div>
+      </nav>
+      {% endif %}
+      <div class="container-fluid mt-0.5" id="main-content">
+        {% block content %}{% endblock %}
+      </div>
+      <footer class="footer mt-auto py-3 bg-light border-top">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+          <span class="text-muted small">© 2025 Sistema de Inventarios. Todos los derechos reservados.</span>
+          <span class="text-muted small">Desarrollado en Python y Flask</span>
+        </div>
+      </footer>
+    </div>
+    </div>
+  <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var collapseElements = document.querySelectorAll('.collapse');
+      collapseElements.forEach(function(el) {
+        el.addEventListener('shown.bs.collapse', function() {
+          var parentLink = document.querySelector('[href="#' + this.id + '"]');
+          if (parentLink) {
+            var chevron = parentLink.querySelector('.chevron-icon');
+            if (chevron) {
+              chevron.classList.add('rotated');
+            }
+          }
+        });
+
+        el.addEventListener('hidden.bs.collapse', function() {
+          var parentLink = document.querySelector('[href="#' + this.id + '"]');
+          if (parentLink) {
+            var chevron = parentLink.querySelector('.chevron-icon');
+            if (chevron) {
+              chevron.classList.remove('rotated');
+            }
+          }
+        });
+      });
+
+      var menuToggle = document.getElementById('menu-toggle');
+      if (menuToggle) {
+        menuToggle.addEventListener('click', function() {
+          var wrapper = document.getElementById('wrapper');
+          if (wrapper) {
+            wrapper.classList.toggle('toggled');
+          }
+        });
+      }
+    });
+  </script>
+
+<!-- Toast Container para mensajes flotantes -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 11">
+    <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <i class="bi bi-check-circle-fill text-success me-2"></i>
+            <strong class="me-auto">Éxito</strong>
+            <small>Ahora</small>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastMessage">
+            Operación completada correctamente.
+        </div>
+    </div>
+</div>
+
+<script>
+// Función para mostrar toast de éxito
+function showSuccessToast(message) {
+    const toastMessage = document.getElementById('toastMessage');
+    const toast = new bootstrap.Toast(document.getElementById('liveToast'));
+
+    toastMessage.textContent = message;
+    toast.show();
+}
+
+// Mostrar toast automáticamente si hay mensaje de éxito
+document.addEventListener('DOMContentLoaded', function() {
+    const successMessages = document.querySelectorAll('.alert-success');
+    successMessages.forEach(alert => {
+        const message = alert.textContent.trim();
+        if (message && !message.includes('Close')) {
+            showSuccessToast(message);
+            // Ocultar la alerta normal después de mostrar el toast
+            setTimeout(() => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }, 1000);
+        }
+    });
+});
+</script>
+
+
+</body>
+</html>

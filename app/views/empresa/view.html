@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+
+{% block title %}Configuración de Empresa{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <div class="row">
+        <!-- Información Principal de la Empresa -->
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-building me-2"></i>Información de la Empresa</h5>
+                    <a href="{{ url_for('empresa_bp.edit_empresa') }}" class="btn btn-light btn-sm">
+                        <i class="bi bi-pencil-square me-1"></i> Editar
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if empresa %}
+                    <div class="mb-3">
+                        <label class="fw-bold">Razón Social:</label>
+                        <p class="form-control-plaintext ps-2">{{ empresa.razon_social }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="fw-bold">RUC:</label>
+                        <p class="form-control-plaintext ps-2">{{ empresa.ruc }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="fw-bold">Dirección:</label>
+                        <p class="form-control-plaintext ps-2">{{ empresa.direccion }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="fw-bold">Moneda Base:</label>
+                        <p class="form-control-plaintext ps-2">
+                            {{ empresa.moneda_nombre }} ({{ empresa.simbolo }} - {{ empresa.codigo_iso }})
+                        </p>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-3">
+                        <i class="bi bi-building display-6 text-muted mb-3"></i>
+                        <p class="text-muted">No hay información de la empresa registrada</p>
+                        <a href="{{ url_for('empresa_bp.edit_empresa') }}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-circle me-1"></i> Configurar Empresa
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Gestión de IGV -->
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-percent me-2"></i>Tasas de IGV</h5>
+                    <button type="button" class="btn btn-dark btn-sm" data-bs-toggle="modal" data-bs-target="#modalIGV">
+                        <i class="bi bi-plus-lg me-1"></i> Nueva Tasa
+                    </button>
+                </div>
+                <div class="card-body">
+                    <!-- Tasa Actual -->
+                    {% if tasa_actual %}
+                    <div class="alert alert-success mb-3">
+                        <h6 class="alert-heading mb-2">
+                            <i class="bi bi-check-circle me-2"></i>Tasa Vigente
+                        </h6>
+                        <div class="row">
+                            <div class="col-4">
+                                <strong>{{ "%.2f"|format(tasa_actual.porcentaje) }}%</strong>
+                            </div>
+                            <div class="col-8">
+                                <small>{{ tasa_actual.descripcion or 'Sin descripción' }}</small>
+                                <br>
+                                <small class="text-muted">Desde: {{ tasa_actual.fecha_inicio.strftime('%d/%m/%Y') }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Historial de Tasas -->
+                    <h6 class="border-bottom pb-2">Historial de Tasas</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Porcentaje</th>
+                                    <th>Descripción</th>
+                                    <th>Fecha Inicio</th>
+                                    <th width="80">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if tasas_igv %}
+                                {% for tasa in tasas_igv %}
+                                <tr>
+                                    <td>
+                                        <span class="fw-bold {% if tasa_actual and tasa.id_igv == tasa_actual.id_igv %}text-success{% endif %}">
+                                            {{ "%.2f"|format(tasa.porcentaje) }}%
+                                        </span>
+                                    </td>
+                                    <td>{{ tasa.descripcion or '--' }}</td>
+                                    <td>{{ tasa.fecha_inicio.strftime('%d/%m/%Y') }}</td>
+                                    <td>
+                                        {% if not (tasa_actual and tasa.id_igv == tasa_actual.id_igv) %}
+                                        <form action="{{ url_for('empresa_bp.delete_igv_empresa', id_igv=tasa.id_igv) }}"
+                                              method="POST" class="d-inline"
+                                              onsubmit="return confirm('¿Eliminar esta tasa de IGV?');">
+                                            <button type="submit" class="btn btn-danger btn-sm" title="Eliminar">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                        {% else %}
+                                        <span class="badge bg-success">Vigente</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">
+                                        No hay tasas de IGV registradas
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Gestión de Monedas -->
+        <div class="card shadow-sm">
+                    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-currency-exchange me-2"></i>Monedas del Sistema</h5>
+                        <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#modalMoneda">
+                            <i class="bi bi-plus-lg me-1"></i> Agregar
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Símbolo</th>
+                                        <th>Código</th>
+                                        <th width="80">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if monedas %}
+                                    {% for moneda in monedas %}
+                                    <tr>
+                                        <td>{{ moneda.nombre }}</td>
+                                        <td><span class="badge bg-primary">{{ moneda.simbolo }}</span></td>
+                                        <td><code>{{ moneda.codigo_iso }}</code></td>
+                                        <td>
+                                            {% if empresa and empresa.id_moneda_base != moneda.id_moneda %}
+                                            <form action="{{ url_for('empresa_bp.delete_moneda_empresa', id_moneda=moneda.id_moneda) }}"
+                                                  method="POST" class="d-inline"
+                                                  onsubmit="return confirm('¿Eliminar esta moneda?');">
+                                                <button type="submit" class="btn btn-danger btn-sm" title="Eliminar">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                            {% else %}
+                                            <span class="badge bg-info">Base</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted">
+                                            No hay monedas registradas
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+    </div>
+</div>
+
+<!-- Modal para agregar IGV -->
+<div class="modal fade" id="modalIGV" tabindex="-1" aria-labelledby="modalIGVLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="modalIGVLabel">
+                    <i class="bi bi-plus-circle me-2"></i>Nueva Tasa de IGV
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('empresa_bp.add_igv_empresa') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="porcentaje" class="form-label">Porcentaje de IGV *</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="porcentaje" name="porcentaje"
+                                   step="0.01" min="0" max="100" required placeholder="18.00">
+                            <span class="input-group-text">%</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="descripcion" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="descripcion" name="descripcion"
+                                  rows="2" placeholder="Descripción opcional"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="fecha_inicio" class="form-label">Fecha de Inicio *</label>
+                        <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Tasa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para agregar Moneda -->
+<div class="modal fade" id="modalMoneda" tabindex="-1" aria-labelledby="modalMonedaLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="modalMonedaLabel">
+                    <i class="bi bi-plus-circle me-2"></i>Nueva Moneda
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('empresa_bp.add_moneda_empresa') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre *</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre"
+                               required placeholder="Ej: Sol Peruano">
+                    </div>
+                    <div class="mb-3">
+                        <label for="simbolo" class="form-label">Símbolo *</label>
+                        <input type="text" class="form-control" id="simbolo" name="simbolo"
+                               required placeholder="Ej: S/">
+                    </div>
+                    <div class="mb-3">
+                        <label for="codigo_iso" class="form-label">Código ISO *</label>
+                        <input type="text" class="form-control text-uppercase" id="codigo_iso" name="codigo_iso"
+                               required maxlength="3" pattern="[A-Z]{3}" placeholder="PEN">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Moneda</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+}
+.card-header {
+    border-bottom: 1px solid rgba(0,0,0,.125);
+}
+.table th {
+    border-top: none;
+    font-size: 0.875rem;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Configurar fecha mínima para IGV
+    const today = new Date().toISOString().split('T')[0];
+    const fechaInicioInput = document.getElementById('fecha_inicio');
+    if (fechaInicioInput) {
+        fechaInicioInput.min = today;
+        fechaInicioInput.value = today;
+    }
+
+    // Convertir código ISO a mayúsculas
+    const codigoIsoInput = document.getElementById('codigo_iso');
+    if (codigoIsoInput) {
+        codigoIsoInput.addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+    }
+});
+</script>
+{% endblock %}

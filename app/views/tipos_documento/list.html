@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Listado de Tipos de Documento{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h1 class="h3 mb-0"><i class="bi bi-file-earmark-text-fill me-2"></i>Tipos de Documento</h1>
+                    <div class="d-flex">
+                        <a href="{{ url_for('tipos_documento_bp.add_tipo_documento') }}" class="btn btn-light me-2">
+                            <i class="bi bi-plus-lg me-1"></i> Añadir Tipo
+                        </a>
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-light">
+                            <i class="bi bi-arrow-left me-1"></i> Volver
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th scope="col" style="width: 5%;">ID</th>
+                                    <th scope="col" style="width: 35%;">NOMBRE</th>
+                                    <th scope="col" style="width: 20%;">CÓDIGO SUNAT</th>
+                                    <th scope="col" style="width: 13.4%; class="acciones-columna">ACCIONES</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if tipos_documento %}
+                                {% for td in tipos_documento %}
+                                <tr>
+                                    <td>{{ td.id_tipo_documento }}</td>
+                                    <td>{{ td.nombre }}</td>
+                                    <td>{{ td.codigo_sunat }}</td>
+                                    <td class="acciones-columna">
+                                        <a href="{{ url_for('tipos_documento_bp.edit_tipo_documento', id_tipo_documento=td.id_tipo_documento) }}" class="btn btn-warning btn-sm me-2">Editar</a>
+                                        <form action="{{ url_for('tipos_documento_bp.delete_tipo_documento', id_tipo_documento=td.id_tipo_documento) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este tipo de documento?');">
+                                            <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">No hay tipos de documento registrados.</td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .acciones-columna {
+        width: 150px;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Ajustar Inventario Inicial{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-pencil-square me-2"></i>Ajustar Inventario Inicial
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Información Actual -->
+                    <div class="card mb-4 border-info">
+                        <div class="card-header bg-info text-white py-2">
+                            <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Información Actual</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4 mb-2">
+                                    <strong>Artículo:</strong><br>
+                                    <span class="text-primary">{{ inventario.articulo_nombre }}</span>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <strong>Almacén:</strong><br>
+                                    <span class="text-primary">{{ inventario.almacen_nombre }}</span>
+                                </div>
+                                <div class="col-md-2 mb-2">
+                                    <strong>Cantidad:</strong><br>
+                                    <span class="badge bg-secondary">{{ inventario.cantidad }}</span>
+                                </div>
+                                <div class="col-md-2 mb-2">
+                                    <strong>Costo:</strong><br>
+                                    <span class="badge bg-secondary">S/ {{ "%.2f"|format(inventario.costo_unitario) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Formulario de Ajuste -->
+                    <form method="POST">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="nueva_cantidad" class="form-label">Nueva Cantidad:</label>
+                                <input type="number" class="form-control" id="nueva_cantidad"
+                                       name="nueva_cantidad" value="{{ inventario.cantidad }}"
+                                       min="0" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="nuevo_costo" class="form-label">Nuevo Costo Unitario (S/):</label>
+                                <input type="number" step="0.01" class="form-control" id="nuevo_costo"
+                                       name="nuevo_costo" value="{{ "%.2f"|format(inventario.costo_unitario) }}"
+                                       min="0" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="motivo" class="form-label">Motivo del Ajuste:</label>
+                            <textarea class="form-control" id="motivo" name="motivo"
+                                      rows="2" placeholder="Explique el motivo del ajuste..." required></textarea>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('inventario_inicial_bp.list_inventario_inicial') }}"
+                               class="btn btn-secondary">Cancelar</a>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="bi bi-check-circle me-1"></i> Aplicar Ajuste
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

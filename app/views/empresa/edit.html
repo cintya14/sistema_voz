@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Información de Empresa{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h1 class="h3 mb-0"><i class="bi bi-pencil-square me-2"></i>Editar Información de la Empresa</h1>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="border-bottom pb-2 mb-3">Datos Principales</h5>
+
+                                <div class="mb-3">
+                                    <label for="razon_social" class="form-label">Razón Social *</label>
+                                    <input type="text" class="form-control" id="razon_social" name="razon_social"
+                                           required maxlength="255" value="{{ empresa.razon_social if empresa else '' }}">
+                                    <div class="form-text">Nombre legal completo de la empresa</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="ruc" class="form-label">RUC *</label>
+                                    <input type="text" class="form-control" id="ruc" name="ruc"
+                                           required maxlength="15" pattern="[0-9]{11}"
+                                           value="{{ empresa.ruc if empresa else '' }}" title="11 dígitos numéricos">
+                                    <div class="form-text">Número de RUC (11 dígitos)</div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <h5 class="border-bottom pb-2 mb-3">Configuración</h5>
+
+                                <div class="mb-3">
+                                    <label for="direccion" class="form-label">Dirección *</label>
+                                    <textarea class="form-control" id="direccion" name="direccion"
+                                              required maxlength="255" rows="3">{{ empresa.direccion if empresa else '' }}</textarea>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="id_moneda_base" class="form-label">Moneda Base *</label>
+                                    <select class="form-select" id="id_moneda_base" name="id_moneda_base" required>
+                                        <option value="">Seleccione una moneda</option>
+                                        {% for moneda in monedas %}
+                                        <option value="{{ moneda.id_moneda }}"
+                                                {% if empresa and empresa.id_moneda_base == moneda.id_moneda %}selected{% endif %}>
+                                            {{ moneda.nombre }} ({{ moneda.simbolo }}) - {{ moneda.codigo_iso }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">Moneda principal para todas las transacciones del sistema</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info mt-3">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Información importante:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>La razón social y RUC deben coincidir con los documentos oficiales.</li>
+                                <li>La moneda base no podrá ser cambiada fácilmente una vez que existan transacciones registradas.</li>
+                                <li>Toda la información será utilizada en la generación de documentos y reportes.</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a href="{{ url_for('empresa_bp.view_empresa') }}" class="btn btn-secondary me-md-2">
+                                <i class="bi bi-arrow-left me-1"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg me-1"></i>
+                                {% if empresa %}Actualizar Información{% else %}Crear Empresa{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validar RUC (solo números, 11 dígitos)
+    document.getElementById('ruc').addEventListener('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '');
+        if (this.value.length > 11) {
+            this.value = this.value.slice(0, 11);
+        }
+    });
+
+    // Mostrar advertencia si no hay monedas
+    const monedaSelect = document.getElementById('id_moneda_base');
+    if (monedaSelect.options.length <= 1) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-warning mt-2';
+        alertDiv.innerHTML = `
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <strong>No hay monedas registradas.</strong>
+            <a href="{{ url_for('moneda_bp.add_moneda') }}" class="alert-link">
+                Debe registrar al menos una moneda primero.
+            </a>
+        `;
+        monedaSelect.parentNode.appendChild(alertDiv);
+    }
+});
+</script>
+{% endblock %}

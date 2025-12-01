@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+{% from "macros/busqueda.html" import articulo_search_component, articulo_search_scripts %}
+
+{% block title %}Detalle de Movimiento #{{ movimiento.id_movimiento_cabecera }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">
+            <i class="bi bi-{% if movimiento.es_entrada %}box-arrow-in-down{% else %}box-arrow-up{% endif %} me-2"></i>
+            Movimiento #{{ movimiento.id_movimiento_cabecera }}
+        </h1>
+        <div>
+            {% if detalle %}
+            <form action="{{ url_for('movimientos_bp.procesar_movimiento', id_movimiento=movimiento.id_movimiento_cabecera) }}"
+                  method="post" class="d-inline me-2">
+                <button type="submit" class="btn btn-success"
+                        onclick="return confirm('¿Procesar movimiento y actualizar stock?')">
+                    <i class="bi bi-check-circle me-1"></i> Procesar Movimiento
+                </button>
+            </form>
+            {% endif %}
+            <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#modalAgregarArticulo">
+                <i class="bi bi-plus-circle me-1"></i> Agregar Artículo
+            </button>
+            <a href="{% if movimiento.es_entrada %}{{ url_for('movimientos_bp.list_entradas') }}{% else %}{{ url_for('movimientos_bp.list_salidas') }}{% endif %}"
+               class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Volver
+            </a>
+        </div>
+    </div>
+    <!-- En detalle.html - Agregar indicador de estado -->
+   <!-- En detalle.html - REEMPLAZAR el alert existente con este: -->
+    <div class="alert alert-success">
+        <h5><i class="bi bi-check-circle"></i> Movimiento Guardado</h5>
+        <p class="mb-0">
+            Este movimiento está <strong>GUARDADO</strong> en la base de datos.
+            El stock ya ha sido actualizado.
+        </p>
+    </div>
+
+
+    <!-- Información del Movimiento -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Información del Movimiento</h5>
+                    <p><strong>Tipo:</strong>
+                        <span class="badge bg-{% if movimiento.es_entrada %}success{% else %}danger{% endif %}">
+                            {{ movimiento.tipo_movimiento_nombre }}
+                        </span>
+                    </p>
+                    <p><strong>Almacén:</strong> {{ movimiento.almacen_nombre }}</p>
+                    <p><strong>Fecha:</strong> {{ movimiento.fecha_movimiento.strftime('%d/%m/%Y %H:%M') }}</p>
+                    <p><strong>Usuario:</strong> {{ movimiento.nombre_usuario }}</p>
+                    {% if movimiento.proveedor_nombre %}
+                    <p><strong>Proveedor:</strong> {{ movimiento.proveedor_nombre }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Resumen</h5>
+                    <p><strong>Total Artículos:</strong> {{ detalle|length }}</p>
+                    <p><strong>Total Cantidad:</strong> {{ total_cantidad }}</p>
+                    <p><strong>Valor Total:</strong> S/ {{ "%.2f"|format(total_valor) }}</p>
+                    {% if movimiento.observacion %}
+                    <p><strong>Observaciones:</strong> {{ movimiento.observacion }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detalle del Movimiento -->
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Artículos del Movimiento</h5>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover table-sm">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Artículo</th>
+                            <th>Código</th>
+                            <th>Cantidad</th>
+                            <th>{% if movimiento.es_entrada %}Costo Unitario{% else %}Precio Unitario{% endif %}</th>
+                            <th>Subtotal</th>
+                            <th>Unidad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in detalle %}
+                        <tr>
+                            <td>{{ item.articulo_nombre }}</td>
+                            <td>{{ item.codigo }}</td>
+                            <td>{{ item.cantidad }}</td>
+                            <td>S/ {{ "%.2f"|format(item.precio_venta if not movimiento.es_entrada else item.costo_unitario) }}</td>
+                            <td>S/ {{ "%.2f"|format(item.cantidad * (item.precio_venta if not movimiento.es_entrada else item.costo_unitario)) }}</td>
+                            <td>{{ item.unidad_abreviatura }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">
+                                No hay artículos en este movimiento. Agregue artículos usando el botón superior.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    {% if detalle %}
+                    <tfoot class="table-secondary">
+                        <tr>
+                            <td colspan="2"><strong>TOTALES</strong></td>
+                            <td><strong>{{ total_cantidad }}</strong></td>
+                            <td></td>
+                            <td><strong>S/ {{ "%.2f"|format(total_valor) }}</strong></td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para agregar artículo -->
+<div class="modal fade" id="modalAgregarArticulo" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Agregar Artículo al Movimiento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formAgregarArticulo" class="row g-3">
+                    <input type="hidden" name="id_movimiento" value="{{ movimiento.id_movimiento_cabecera }}">
+                    <input type="hidden" id="es_entrada" value="{{ movimiento.es_entrada }}">
+                    <input type="hidden" id="tipo_movimiento" value="{{ movimiento.tipo_movimiento_nombre|lower }}">
+
+                    {{ articulo_search_component(articulos, show_costo=true) }}
+
+                    <div class="col-12 col-md-6">
+                        <label for="cantidad" class="form-label">Cantidad:</label>
+                        <input type="number" id="cantidad" name="cantidad" class="form-control" required min="1">
+                    </div>
+
+                    <div class="col-12">
+                        <small class="form-text text-muted" id="precioInfo"></small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnAgregarArticulo">Agregar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ articulo_search_scripts() }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const esEntrada = document.getElementById('es_entrada').value === 'True';
+    const tipoMovimiento = document.getElementById('tipo_movimiento').value;
+
+    // Detectar si es una venta
+    const esVenta = tipoMovimiento.includes('venta') || tipoMovimiento.includes('salida por venta');
+
+    // Actualizar precio cuando se selecciona artículo
+    document.getElementById('id_articulo').addEventListener('change', function() {
+        const option = this.options[this.selectedIndex];
+        const precioCompra = parseFloat(option.getAttribute('data-precio-compra')) || 0;
+        const precioVenta = parseFloat(option.getAttribute('data-precio-venta')) || 0;
+        const precioInfo = document.getElementById('precioInfo');
+
+        let precioAUsar;
+
+        // Lógica para determinar qué precio usar
+        if (esEntrada) {
+            // Para entradas, usar precio de compra
+            precioAUsar = precioCompra;
+            precioInfo.textContent = `Precio de compra sugerido: S/ ${precioCompra.toFixed(2)}`;
+            precioInfo.className = 'form-text text-info';
+        } else {
+            // Para salidas
+            if (esVenta) {
+                // Si es venta, usar precio de venta
+                precioAUsar = precioVenta;
+                precioInfo.textContent = `Precio de venta: S/ ${precioVenta.toFixed(2)} | Costo: S/ ${precioCompra.toFixed(2)}`;
+                precioInfo.className = 'form-text text-success';
+            } else {
+                // Para otras salidas (mermas, donaciones, etc.), usar costo
+                precioAUsar = precioCompra;
+                precioInfo.textContent = `Costo del producto: S/ ${precioCompra.toFixed(2)}`;
+                precioInfo.className = 'form-text text-info';
+            }
+        }
+
+        document.getElementById('costo_unitario').value = precioAUsar.toFixed(2);
+    });
+
+    // Agregar artículo al movimiento
+    document.getElementById('btnAgregarArticulo').addEventListener('click', function() {
+        const form = document.getElementById('formAgregarArticulo');
+        const formData = new FormData(form);
+
+        fetch('{{ url_for("movimientos_bp.agregar_articulo_movimiento") }}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Error: ' + error);
+        });
+    });
+});
+</script>
+
+<style>
+.table-sm td,
+.table-sm th {
+    padding: 0.4rem !important;
+    font-size: 0.9rem;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Nuevo Conteo Físico{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-clipboard-plus me-2"></i>Nuevo Conteo Físico
+                    </h5>
+                </div>
+                <div class="card-body p-1 p-md-3">
+                    <form action="{{ url_for('conteo_fisico_bp.add_conteo') }}" method="POST">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label for="fecha_inicio" class="form-label">Fecha de Inicio:</label>
+                                <input type="datetime-local" id="fecha_inicio" name="fecha_inicio"
+                                       class="form-control" value="{{ fecha_hoy }}T00:00" required>
+                            </div>
+                            <div class="col-12">
+                                <label for="id_almacen" class="form-label">Almacén:</label>
+                                <select id="id_almacen" name="id_almacen" class="form-select" required>
+                                    <option value="">Seleccionar almacén</option>
+                                    {% for almacen in almacenes %}
+                                    <option value="{{ almacen.id_almacen }}">{{ almacen.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label for="observaciones" class="form-label">Observaciones:</label>
+                                <textarea id="observaciones" name="observaciones" class="form-control"
+                                          rows="3" placeholder="Observaciones del conteo..."></textarea>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-center mt-4">
+                            <button type="submit" class="btn btn-primary d-flex align-items-center me-2">
+                                <i class="bi bi-save me-2"></i>Crear Conteo
+                            </button>
+                            <a href="{{ url_for('conteo_fisico_bp.list_conteos') }}" class="btn btn-secondary d-flex align-items-center">
+                                <i class="bi bi-x-circle me-2"></i>Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

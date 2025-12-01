@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Añadir Nuevo Artículo{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-plus-circle me-2"></i>Añadir Nuevo Artículo
+                    </h5>
+                </div>
+                <div class="card-body p-1 p-md-3">
+                    <form action="{{ url_for('articulos_bp.add_articulo') }}" method="POST">
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
+                                <label for="codigo" class="form-label">Código:</label>
+                                <input type="text" id="codigo" name="codigo" class="form-control" required>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="nombre" class="form-label">Nombre:</label>
+                                <input type="text" id="nombre" name="nombre" class="form-control" required>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="precio_compra" class="form-label">Precio Compra (S/):</label>
+                                <input type="number" step="0.01" id="precio_compra" name="precio_compra" class="form-control" required>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="precio_venta" class="form-label">Precio Venta (S/):</label>
+                                <input type="number" step="0.01" id="precio_venta" name="precio_venta" class="form-control" required>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="stock_minimo" class="form-label">Stock Mínimo:</label>
+                                <input type="number" id="stock_minimo" name="stock_minimo" class="form-control" value="0" required>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="id_categoria" class="form-label">Categoría:</label>
+                                <select id="id_categoria" name="id_categoria" class="form-select" required>
+                                    <option value="">Seleccionar categoría</option>
+                                    {% for categoria in categorias %}
+                                    <option value="{{ categoria.id_categoria }}">{{ categoria.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="id_marca" class="form-label">Marca (Opcional):</label>
+                                <select id="id_marca" name="id_marca" class="form-select">
+                                    <option value="">Seleccionar marca</option>
+                                    {% for marca in marcas %}
+                                    <option value="{{ marca.id_marca }}">{{ marca.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="id_unidad_medida" class="form-label">Unidad de Medida:</label>
+                                <select id="id_unidad_medida" name="id_unidad_medida" class="form-select" required>
+                                    <option value="">Seleccionar unidad</option>
+                                    {% for unidad in unidades %}
+                                    <option value="{{ unidad.id_unidad_medida }}">{{ unidad.nombre }} ({{ unidad.abreviatura }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-center mt-4">
+                            <button type="submit" class="btn btn-primary d-flex align-items-center me-2">
+                                <i class="bi bi-save me-2"></i>Guardar
+                            </button>
+                            <a href="{{ url_for('articulos_bp.list_articulos') }}" class="btn btn-secondary d-flex align-items-center">
+                                <i class="bi bi-x-circle me-2"></i>Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

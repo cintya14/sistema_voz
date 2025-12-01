@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Usuario{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white py-3">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-person-circle me-2"></i>Editar Usuario
+            </h5>
+        </div>
+        <div class="card-body p-1 p-md-3">
+            <form action="{{ url_for('usuarios_bp.edit_usuario', id_usuario=usuario.id_usuario) }}" method="POST">
+                <div class="row g-4">
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                        <label for="nombre" class="form-label">Nombres:</label>
+                        <input type="text" id="nombre" name="nombre" class="form-control" value="{{ usuario.nombre }}" required>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                        <label for="apellido" class="form-label">Apellidos:</label>
+                        <input type="text" id="apellido" name="apellido" class="form-control" value="{{ usuario.apellido }}" required>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                        <label for="nro_documento" class="form-label">Nro. Documento:</label>
+                        <input type="text" id="nro_documento" name="nro_documento" class="form-control" value="{{ usuario.nro_documento }}" required>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                        <label for="nombre_usuario" class="form-label">Nombre de Usuario:</label>
+                        <input type="text" id="nombre_usuario" name="nombre_usuario" class="form-control" value="{{ usuario.nombre_usuario }}" required>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                        <label for="email" class="form-label">Email:</label>
+                        <input type="email" id="email" name="email" class="form-control" value="{{ usuario.email }}" required>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                        <label for="password" class="form-label">Nueva Contraseña:</label>
+                        <input type="password" id="password" name="password" class="form-control" placeholder="Dejar vacío para no cambiar">
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                        <label for="id_rol" class="form-label">Rol:</label>
+                        <select id="id_rol" name="id_rol" class="form-select" required>
+                            {% for rol in roles %}
+                            <option value="{{ rol.id_rol }}" {% if usuario.id_rol == rol.id_rol %} selected {% endif %}>{{ rol.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                        <label for="estado" class="form-label">Estado:</label>
+                        <select id="estado" name="estado" class="form-select" required>
+                            <option value="ACTIVO" {% if usuario.estado == 'ACTIVO' %} selected {% endif %}>ACTIVO</option>
+                            <option value="INACTIVO" {% if usuario.estado == 'INACTIVO' %} selected {% endif %}>INACTIVO</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-center mt-3">
+                    <button type="submit" class="btn btn-primary d-flex align-items-center me-2">
+                        <i class="bi bi-arrow-clockwise me-2"></i>Actualizar
+                    </button>
+                    <a href="{{ url_for('usuarios_bp.list_usuarios') }}" class="btn btn-secondary d-flex align-items-center">
+                        <i class="bi bi-x-circle me-2"></i>Cerrar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
