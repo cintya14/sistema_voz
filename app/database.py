@@ -1,27 +1,29 @@
 # app/database.py
-import mysql.connector
-from mysql.connector import Error
+import pymysql
+from pymysql import Error
 from app.config import Config
 
 def get_db_connection():
     """Establece y devuelve una conexión a la base de datos."""
     try:
-        connection = mysql.connector.connect(
+        connection = pymysql.connect(
             host=Config.MYSQL_HOST,
+            port=Config.MYSQL_PORT,  # ✅ AGREGAR ESTO
             user=Config.MYSQL_USER,
             password=Config.MYSQL_PASSWORD,
-            database=Config.MYSQL_DB
+            database=Config.MYSQL_DB,
+            cursorclass=pymysql.cursors.DictCursor,
+            connect_timeout=10  # ✅ AGREGAR TIMEOUT
         )
-        if connection.is_connected():
-            print("Conexión a la base de datos MySQL exitosa.")
-            return connection
+        print("Conexión a la base de datos MySQL exitosa.")
+        return connection
     except Error as e:
         print(f"Error al conectar a la base de datos MySQL: {e}")
         return None
 
 def close_db_connection(connection):
     """Cierra la conexión a la base de datos."""
-    if connection and connection.is_connected():
+    if connection and connection.open:
         connection.close()
         print("Conexión a la base de datos MySQL cerrada.")
 
@@ -33,7 +35,7 @@ if __name__ == '__main__':
         try:
             cursor.execute("SELECT VERSION();")
             db_version = cursor.fetchone()
-            print(f"Versión de la base de datos MySQL: {db_version[0]}")
+            print(f"Versión de la base de datos MySQL: {db_version}")
         except Error as e:
             print(f"Error al ejecutar consulta: {e}")
         finally:
