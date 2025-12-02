@@ -1,15 +1,35 @@
+# Entornos virtuales
+venv*/
+venv_produccion/
+env*/
+
+# IDE
 .idea/
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-venv/
-env/
-*.db
-*.sqlite3
-*.log
-config.py
+
+# Archivos de entorno
 .env
+.env.local
+*.env
+
+# NLTK data
+nltk_data/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+
+# Sistema
 .DS_Store
 Thumbs.db
-instance/
+
+# Logs
+*.log
+
+# Backup
+*.bak
