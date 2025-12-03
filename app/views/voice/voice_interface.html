@@ -226,7 +226,8 @@
 </div>
 
 <!-- Incluir el JavaScript de voz -->
-<script src="{{ url_for('static', filename='voice/voice.js') }}"></script>
+<!-- Incluir el JavaScript de voz modularizado -->
+<script type="module" src="{{ url_for('static', filename='voice/voice-assistant.js') }}"></script>
 
 <style>
 

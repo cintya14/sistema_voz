@@ -22,25 +22,51 @@ class ProductMatcher:
 
         # Diccionario de sinónimos y variaciones expandido
         self.variaciones = {
-            # Plurales comunes
-            'lapices': 'lapiz', 'boligrafos': 'boligrafo', 'cuadernos': 'cuaderno',
-            'hojas': 'hoja', 'cartulinas': 'cartulina', 'tijeras': 'tijera',
-            'reglas': 'regla', 'gomas': 'goma', 'sacapuntas': 'sacapuntas',
-            'compases': 'compas', 'transportadores': 'transportador',
-            'escuadras': 'escuadra', 'marcadores': 'marcador',
-            'rotuladores': 'rotulador', 'pinceles': 'pincel',
-            'temperas': 'tempera', 'acrilicos': 'acrilico',
-            'crayones': 'crayon', 'plasticinas': 'plasticina',
 
-            # Variaciones ortográficas
-            'lapiz': 'lapiz', 'lapices': 'lapiz',
-            'plumones': 'marcador', 'plumon': 'marcador',
-            'colores': 'color', 'carton': 'cartulina',
-            'papel': 'hoja', 'papeles': 'hoja',
+            # --- Plurales sin pérdida de significado ---
+            'papeles': 'papel',
+            'hojas': 'hoja',
+            'cuadernos': 'cuaderno',
+            'cartulinas': 'cartulina',
+            'marcadores': 'marcador',
+            'plumones': 'plumon',
+            'crayones': 'crayon',
+            'plasticinas': 'plasticina',
+            'tijeras': 'tijera',
+            'gomas': 'goma',
+            'reglas': 'regla',
 
-            # Términos compuestos
-            'hoja carta': 'carta', 'hoja oficio': 'oficio',
-            'cartulina blanca': 'cartulina', 'cartulina color': 'cartulina'
+            # --- Variaciones ortográficas o fonéticas reales ---
+            'lapices': 'lapiz',
+            'colores': 'color',
+            'pegamentos': 'pegamento',
+            'adhesivos': 'pegamento',
+            'scotch': 'cinta',
+            'celo': 'cinta',
+            'hoja': 'hojas',
+
+            # --- Variaciones de términos según tu inventario ---
+            'papelote': 'papelote',  # No debe mezclarse con papel bond
+            'bond': 'bond',
+            'lustre': 'lustre',
+            'sedita': 'sedita',
+            'metalico': 'metalico',
+
+            # --- Material escolar común ---
+            'marcador acrimax': 'marcador acrimax',
+            'plumon acrimax': 'plumon acrimax',
+            'plumon pizarra': 'plumon pizarra',
+            'marcador pizarra': 'marcador pizarra',
+
+            # --- Términos compuestos comunes reales ---
+            'papel lustre': 'papel lustre',
+            'papel sedita': 'papel sedita',
+            'papel metalico': 'papel metalico',
+            'papel bond': 'papel bond',
+            'papel a4': 'a4',
+            'hoja a4': 'a4',
+            'hoja carta': 'carta',
+            'hoja oficio': 'oficio',
         }
 
     def buscar_productos(self, termino_busqueda):
